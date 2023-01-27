@@ -6,7 +6,7 @@ const colors = ["FFFFFF", "23A500", "D10000", "096FE2"];
 
 /**
  * 
- * @param {{is_alive: bool, initial: bool, inmutable: bool, rule: bool}} props 
+ * @param {{is_alive: bool, initial: bool, inmutable: bool, rule: bool, id: int, currentStep: int}} props 
  * @returns 
  */
 export default function Cell(props) {
@@ -19,6 +19,14 @@ export default function Cell(props) {
     if (props.inmutable) setColor(colors[3]);
     else setColor(props.initial ? colors[0] : showColor());
   }, [])
+
+  useEffect(() => {
+    setColor(showColor());
+  }, [props.currentStep])
+
+  useEffect(() => {
+    showColor();
+  }, [props.is_alive])
 
   useEffect(() => {
     if (!props.initial || props.inmutable) return;
@@ -38,14 +46,16 @@ export default function Cell(props) {
     return colors[2];
   }
 
-  const handleClick = () => {
+  const handleClick = (e) => {
     if (!props.initial || props.inmutable) return;
     setSteps((steps + 1) % 3);
+    let id = e.target.id;
+    sessionStorage.setItem(id, `${(steps + 1) % 3}`);
   }
 
   return (
     <Card style={{ backgroundColor: `#${color}` }} onMouseEnter={() => { setHover(true) }} onMouseLeave={() => { setHover(false) }} onClick={handleClick}>
-      <Grid style={{ padding: `${props.rule ? '70px' : '10px'}` }} />
+      <Grid id={props.id} style={{ padding: `${props.rule ? '70px' : '10px'}` }} />
     </Card>
   )
 }

@@ -1,8 +1,11 @@
 import './App.css';
-import { Button, Card, Grid } from '@mui/material';
+import { Button, Card, Grid, Typography } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Automata1D from './Automata1D';
+import Automata2D from './Automata2D';
+import { getRules1D, getRules2D, getBoard1D, getBoard2D } from './utils';
+import { firstPetitionAutomaton1D, firstPetitionAutomaton2D } from './utils/automata';
 
 const theme = createTheme({
   palette: {
@@ -20,23 +23,34 @@ const theme = createTheme({
 function App() {
   const [selectedAutomata, setSelectedAutomata] = useState("");
   const [initialState, setInitialState] = useState(false);
-  const [ruleState, setRuleState] = useState(true);
+  const [ruleState, setRuleState] = useState(false);
   const [currenStep, setCurrentStep] = useState(-3);
+  const [pattern, setPattern] = useState(null);
+  const [board, setBoard] = useState(null);
 
-  const handleAutomata = (e) => {
-    if (currenStep == -2) transition();
-    setCurrentStep(-1);
+  useEffect(() => {
     setInitialState(false);
     setRuleState(true);
+    setCurrentStep(-3);
+    sessionStorage.clear();
+  }, [])
+
+  const handleAutomata = (e) => {
+    if (selectedAutomata != "") {
+      sessionStorage.clear();
+      setCurrentStep(-2);
+      setInitialState(false);
+      setRuleState(true);
+    } else transition();
+
     let id = e.target.id;
     setSelectedAutomata(id);
   }
 
   const showAutomata = () => {
     if (selectedAutomata == "1D") {
-      return <Automata1D ruleState={ruleState} initialState={initialState} />
-    }
-
+      return <Automata1D ruleState={ruleState} initialState={initialState} currentStep={currenStep} board={board} />
+    } else if (selectedAutomata == "2D") return <Automata2D ruleState={ruleState} initialState={initialState} currentStep={currenStep} board={board} />
     return <></>
   }
 
@@ -48,9 +62,23 @@ function App() {
     setCurrentStep(currenStep - 1);
   }
 
-  const startAutomata = () => {
-    transition();
+  const startAutomata = async () => {
     setInitialState(false);
+
+    let ultimateBoard = null;
+    if (selectedAutomata == "1D") ultimateBoard = await firstPetitionAutomaton1D(getBoard1D(), pattern);
+    else ultimateBoard = await firstPetitionAutomaton2D(getBoard2D(), pattern);
+    setBoard(ultimateBoard);
+    transition();
+  }
+
+  const establishRule = () => {
+    transition();
+    setRuleState(false);
+    setInitialState(true);
+
+    if (selectedAutomata == "1D") setPattern(getRules1D());
+    else setPattern(getRules2D());
   }
 
   const showButtons = () => {
@@ -58,7 +86,17 @@ function App() {
       return (<></>)
     }
     if (currenStep == -2) {
-      return (<></>)
+      return (<>
+        <Grid item xs={3} />
+
+        <Grid item xs={6}>
+          <Button id="1D" variant='contained' onClick={establishRule}>
+            Establecer regla de transición
+          </Button>
+        </Grid>
+
+        <Grid item xs={3} />
+      </>)
     }
     if (currenStep == -1) {
       return (
@@ -93,6 +131,47 @@ function App() {
     )
   }
 
+  const showText = () => {
+    if (currenStep == -3) {
+      return (
+        <Grid>
+          <Typography variant="h4" gutterBottom>
+            Elija un tipo de autómata celular
+          </Typography>
+        </Grid>
+      )
+    }
+    if (ruleState) {
+      return (
+        <Grid>
+          <Typography variant="h4" gutterBottom>
+            Establezca la regla
+          </Typography>
+
+          <Typography variant="h5" gutterBottom>
+            Celda en blanco es indiferente. Celda verde exije que esté viva la celda. Celda roja exije que esté muerta la celda.
+          </Typography>
+        </Grid>
+      )
+    }
+
+    if (initialState) {
+      return (
+        <Grid>
+          <Typography variant="h4" gutterBottom>
+            Establezca el estado inicial
+          </Typography>
+
+          <Typography variant="h5" gutterBottom>
+            Celda en blanco es indiferente. Celda verde implica que está viva la celda. Celda roja implica que está muerta la celda.
+          </Typography>
+        </Grid>
+      )
+    }
+
+    return <></>
+  }
+
   return (
     <div className="App">
       <header className="App-header">
@@ -112,7 +191,11 @@ function App() {
           </Grid>
         </ThemeProvider>
 
-        <Grid container style={{ padding: '50px' }}>
+        <Grid container style={{ padding: '50px' }} justifyContent="center" alignItems="center">
+          {showText()}
+        </Grid>
+
+        <Grid container style={{ padding: '50px' }} justifyContent="center" alignItems="center">
           {showAutomata()}
         </Grid>
 
