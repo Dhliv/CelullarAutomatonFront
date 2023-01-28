@@ -5,10 +5,10 @@ function getRules1D() {
   };
 
   let rule = sessionStorage.getItem("0");
-  if (rule != undefined) {
+  if (rule !== undefined && rule !== null) {
     let letter = rule[rule.length - 1];
     pattern.Cells.push({
-      "State": letter == "1" ? true : false,
+      "State": letter === "1" ? true : false,
       "Position": {
         "position": -1
       }
@@ -16,10 +16,10 @@ function getRules1D() {
   }
 
   rule = sessionStorage.getItem("2");
-  if (rule != undefined) {
+  if (rule !== undefined && rule !== null) {
     let letter = rule[rule.length - 1];
     pattern.Cells.push({
-      "State": letter == "1" ? true : false,
+      "State": letter === "1" ? true : false,
       "Position": {
         "position": 1
       }
@@ -34,12 +34,12 @@ function getBoard1D() {
 
   for (let i = 0; i < 100; i++) {
     let cell = sessionStorage.getItem(`${i}`);
-    if (cell == undefined) {
+    if (cell === undefined || cell === null) {
       board.push(false);
       continue;
     }
 
-    let state = cell[cell.length - 1] == "1" ? true : false;
+    let state = cell[cell.length - 1] === "1";
     board.push(state);
   }
 
@@ -52,17 +52,19 @@ function getBoard2D() {
   for (let i = 0; i < 10; i++) {
     let row = [];
     for (let j = 0; j < 10; j++) {
-      let cell = sessionStorage.getItem(`${i}`);
-      if (cell == undefined) {
+      let cell = sessionStorage.getItem(`${i*10 + j}`);
+      if (cell === undefined || cell === null) {
         row.push(false);
         continue;
       }
 
-      let state = cell[cell.length - 1] == "1" ? true : false;
+      let state = cell[cell.length - 1] === "1";
       row.push(state);
     }
     board.push(row);
   }
+
+  console.log("Board: \n", board, "\n\n")
 
   return board;
 }
@@ -75,18 +77,17 @@ function getRules2D() {
 
   for (let i = 0; i < 9; i++) {
     rule = sessionStorage.getItem(`${i}`);
-    if (rule == undefined) continue;
+    if (rule === undefined || rule === null) continue;
 
-    let state = rule[rule.length - 1] == "1" ? true : false;
-    let number = rule[0].charCodeAt(0) - "0".charCodeAt(0);
-    let row = Math.trunc(number / 3)
-    let col = number % 3
+    let state = rule[rule.length - 1] === "1" ? true : false;
+    let row = Math.trunc(i / 3);
+    let col = i % 3;
 
     pattern.Cells.push({
       "State": state,
       "Position": {
-        "row": row,
-        "col": col
+        "row": row === 0 ? -1 : row === 2 ? 1 : 0,
+        "col": col === 0 ? -1 : col === 2 ? 1 : 0
       }
     })
   }

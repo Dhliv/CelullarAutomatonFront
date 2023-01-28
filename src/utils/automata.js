@@ -1,10 +1,5 @@
 import axios from 'axios'
-const PROD_URL = ""
-const DEV_URL = "http://localhost:8080/"
-
-const HOST_URL = DEV_URL
-
-const AUTOMATON = HOST_URL + "automaton/"
+import {AUTOMATON} from "./../constants/urls"
 
 async function firstPetitionAutomaton1D(board, pattern) {
 
@@ -16,7 +11,9 @@ async function firstPetitionAutomaton1D(board, pattern) {
   let data;
   try {
     const response = await axios.post(`${AUTOMATON}init_automaton1D`, body)
-    data = response.data;
+    // data = String2boolArray(
+    data = response.data
+      // );
   } catch (e) {
     data = null;
     console.log(e);
@@ -53,7 +50,7 @@ async function NextState() {
     console.log(e);
   }
 
-  return null;
+  return data;
 }
 
 async function PreviousState() {
@@ -64,6 +61,8 @@ async function PreviousState() {
   } catch (e) {
     console.log(e);
   }
+
+  return data
 }
 
 export { firstPetitionAutomaton1D, firstPetitionAutomaton2D, NextState, PreviousState }
